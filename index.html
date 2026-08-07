@@ -134,6 +134,7 @@ button:active { transform: translateY(0); }
 .btn-det { background: #006b3f; color: white; border-color: #008f54; }
 .btn-nota { background: #e67e22; color: white; border-color: #f39c12; }
 .btn-pcmso { background: #6d28d9; color: white; border-color: #8b5cf6; }
+.btn-dec { background: #9f1239; color: white; border-color: #e11d48; }
 
 .btn-env:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(0.5); }
 .btn-env:disabled:hover { opacity: 0.4; }
@@ -337,6 +338,11 @@ button.future { background: var(--color-bg-subtle); color: var(--color-text-tert
         <span class="env-desc">Portal Ocupacional MED (PCMSO)</span>
         <span class="env-tag">Saúde Ocupacional</span>
       </button>
+      <button class="btn-env btn-dec" onclick="goToPortal('dec')" disabled>
+        <span class="env-title">🏢 Domicílio Fiscal Estadual - DEC</span>
+        <span class="env-desc">Situação fiscal, intimações e comunicações eletrônicas junto à SEFAZ-RJ.</span>
+        <span class="env-tag">Tema: Fiscal Estadual</span>
+      </button>
     </div>
   </div>
 
@@ -363,10 +369,10 @@ button.future { background: var(--color-bg-subtle); color: var(--color-text-tert
         <div class="modal-body ev-modal-body">
 
             <h4>Nova Evidência</h4>
-            <p class="ev-hint" id="evLimitHint" style="margin-bottom: var(--space-12);">É permitida apenas 1 evidência por tema (Fiscal, Trabalhista, Nota Carioca, PCMSO).</p>
+            <p class="ev-hint" id="evLimitHint" style="margin-bottom: var(--space-12);">É permitida apenas 1 evidência por tema (Fiscal, Trabalhista, Nota Carioca, PCMSO, DEC).</p>
 
             <div id="evLimitReachedMsg" style="display:none; padding: var(--space-16); background: var(--color-bg-subtle); border: 1px dashed var(--color-border-strong); border-radius: var(--radius-8); margin-bottom: var(--space-16); text-align:center;">
-                ✅ Você já cadastrou uma evidência para cada tema (limite de 4 atingido). Remova uma evidência existente na lista abaixo para poder adicionar outra.
+                ✅ Você já cadastrou uma evidência para cada tema (limite de 5 atingido). Remova uma evidência existente na lista abaixo para poder adicionar outra.
             </div>
 
             <div id="evNewFormFields">
@@ -378,6 +384,7 @@ button.future { background: var(--color-bg-subtle); color: var(--color-text-tert
                             <option value="trabalhista">Trabalhista</option>
                             <option value="outros">Nota Carioca</option>
                             <option value="pcmso">PCMSO</option>
+                            <option value="dec">Domicílio Fiscal Estadual - DEC</option>
                         </select>
                         <p class="ev-hint" id="evCategoryWarning" style="display:none; color: var(--color-error);">Este tema já possui uma evidência. Remova-a antes de adicionar outra.</p>
                     </div>
@@ -442,6 +449,11 @@ const envs = {
         title: "Nota Carioca - Prefeitura do Rio",
         url: "https://notacarioca.rio.gov.br/senhaweb/login.aspx",
         color: "#e67e22"
+    },
+    dec: {
+        title: "Domicílio Fiscal Estadual - DEC",
+        url: "https://ssa.fazenda.rj.gov.br/ssa/?msg=#no-back-button",
+        color: "#9f1239"
     }
 };
 
@@ -510,7 +522,7 @@ let currentEvidenceImage = null; // dataURL da imagem selecionada
 let lastPdfBlobUrl = null;
 let lastPdfBlob = null;
 
-const categoryLabels = { fiscal: 'Fiscal', trabalhista: 'Trabalhista', outros: 'Nota Carioca', pcmso: 'PCMSO' };
+const categoryLabels = { fiscal: 'Fiscal', trabalhista: 'Trabalhista', outros: 'Nota Carioca', pcmso: 'PCMSO', dec: 'Domicílio Fiscal Estadual - DEC' };
 
 // Textos padrão que semipreenchem o formulário de nova evidência de acordo
 // com o tema selecionado (o usuário ainda pode editá-los livremente)
@@ -518,7 +530,8 @@ const categoryTitleDefaults = {
     fiscal: 'Consulta ao ambiente fiscal',
     trabalhista: 'Consulta ao ambiente Trabalhista',
     outros: 'Consulta ao emissor de notas fiscais municipal',
-    pcmso: 'Consulta ao Portal Ocupacional MED (PCMSO)'
+    pcmso: 'Consulta ao Portal Ocupacional MED (PCMSO)',
+    dec: 'Consulta ao Domicílio Fiscal Estadual (DEC)'
 };
 const defaultEvidenceNotes = 'Consulta periódica semanal';
 
@@ -668,7 +681,7 @@ function updateCategorySelectOptions() {
     const limitHint = document.getElementById('evLimitHint');
 
     if (firstAvailable === null) {
-        // Todos os 4 temas já possuem evidência: esconde o formulário de
+        // Todos os 5 temas já possuem evidência: esconde o formulário de
         // cadastro por completo em vez de deixar o combobox em estado confuso
         formFields.style.display = 'none';
         limitMsg.style.display = 'block';
@@ -863,7 +876,7 @@ async function generatePdfPreview(notify = true) {
         y += razaoLines.length * 13;
 
         doc.text(
-            `Gerado em: ${new Date().toLocaleString('pt-BR')}    |    Página ${pageIndex + 1} de ${totalPages}    |    Evidências: ${evidences.length} de 4 temas`,
+            `Gerado em: ${new Date().toLocaleString('pt-BR')}    |    Página ${pageIndex + 1} de ${totalPages}    |    Evidências: ${evidences.length} de 5 temas`,
             margin, y
         );
         y += 10;
