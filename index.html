@@ -94,7 +94,7 @@ button:active { transform: translateY(0); }
 .carousel-slide .slide-text p { margin: 0; opacity: 0.92; font-size: var(--text-small); max-width: 520px; }
 .carousel-slide.slide-fiscal { background: linear-gradient(120deg, #003366, #0a5aa8); }
 .carousel-slide.slide-trab { background: linear-gradient(120deg, #004d2e, #009a5e); }
-.carousel-slide.slide-nota { background: linear-gradient(120deg, #a85d00, #f39c12); }
+.carousel-slide.slide-nota { background: linear-gradient(120deg, #0b4f6c, #1b8a9e); }
 .carousel-slide.slide-pcmso { background: linear-gradient(120deg, #4c1d95, #8b5cf6); }
 .carousel-dots { position: absolute; bottom: var(--space-12); left: 0; right: 0; display: flex; justify-content: center; gap: var(--space-8); }
 .carousel-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.45); border: none; cursor: pointer; padding: 0; transition: background 0.2s, transform 0.2s; }
@@ -132,7 +132,7 @@ button:active { transform: translateY(0); }
 
 .btn-ecac { background: #003366; color: white; border-color: #004a99; }
 .btn-det { background: #006b3f; color: white; border-color: #008f54; }
-.btn-nota { background: #e67e22; color: white; border-color: #f39c12; }
+.btn-nota { background: #0b4f6c; color: white; border-color: #1b8a9e; }
 .btn-pcmso { background: #6d28d9; color: white; border-color: #8b5cf6; }
 .btn-dec { background: #9f1239; color: white; border-color: #e11d48; }
 
@@ -244,7 +244,7 @@ button.future { background: var(--color-bg-subtle); color: var(--color-text-tert
 <div class="app">
   <div class="header">
     <h1>🔎 GRUPO LABMEDIC - Consulta de Riscos Empresariais</h1>
-    <p>Análise dinâmica e integrada para conformidade fiscal, trabalhista e municipal.</p>
+    <p>Análise dinâmica e integrada para conformidade fiscal, trabalhista e de emissão de NFS-e.</p>
   </div>
 
   <!-- CARROSSEL TEMÁTICO -->
@@ -265,10 +265,10 @@ button.future { background: var(--color-bg-subtle); color: var(--color-text-tert
         </div>
       </div>
       <div class="carousel-slide slide-nota">
-        <div class="slide-icon">🏙️</div>
+        <div class="slide-icon">🧾</div>
         <div class="slide-text">
-          <h3>Nota Carioca</h3>
-          <p>Consulte NFS-e, débitos municipais e ISS junto à Prefeitura do Rio de Janeiro.</p>
+          <h3>NFS-e Nacional</h3>
+          <p>Emita e consulte Notas Fiscais de Serviço eletrônicas no Emissor Nacional (Portal Nacional da NFS-e).</p>
         </div>
       </div>
       <div class="carousel-slide slide-pcmso">
@@ -329,9 +329,9 @@ button.future { background: var(--color-bg-subtle); color: var(--color-text-tert
         <span class="env-tag">Tema: Trabalhista</span>
       </button>
       <button class="btn-env btn-nota" onclick="goToPortal('nota')" disabled>
-        <span class="env-title">🏙️ Nota Carioca (Rio)</span>
-        <span class="env-desc">Consulta de NFS-e, débitos municipais e ISS no município do RJ.</span>
-        <span class="env-tag">Tema: Nota Carioca</span>
+        <span class="env-title">🧾 Emissor Nacional NFS-e</span>
+        <span class="env-desc">Emissão e consulta de NFS-e no Portal Nacional da Nota Fiscal de Serviço eletrônica.</span>
+        <span class="env-tag">Tema: NFS-e Nacional</span>
       </button>
       <button class="btn-env btn-pcmso" onclick="window.open('http://www.ocupacionalmed.com.br', '_blank')" disabled>
         <span class="env-title">🩺 Consulta PCMSO</span>
@@ -369,7 +369,7 @@ button.future { background: var(--color-bg-subtle); color: var(--color-text-tert
         <div class="modal-body ev-modal-body">
 
             <h4>Nova Evidência</h4>
-            <p class="ev-hint" id="evLimitHint" style="margin-bottom: var(--space-12);">É permitida apenas 1 evidência por tema (Fiscal, Trabalhista, Nota Carioca, PCMSO, DEC).</p>
+            <p class="ev-hint" id="evLimitHint" style="margin-bottom: var(--space-12);">É permitida apenas 1 evidência por tema (Fiscal, Trabalhista, NFS-e Nacional, PCMSO, DEC).</p>
 
             <div id="evLimitReachedMsg" style="display:none; padding: var(--space-16); background: var(--color-bg-subtle); border: 1px dashed var(--color-border-strong); border-radius: var(--radius-8); margin-bottom: var(--space-16); text-align:center;">
                 ✅ Você já cadastrou uma evidência para cada tema (limite de 5 atingido). Remova uma evidência existente na lista abaixo para poder adicionar outra.
@@ -382,7 +382,7 @@ button.future { background: var(--color-bg-subtle); color: var(--color-text-tert
                         <select id="evCategory" onchange="checkCategoryAvailability()">
                             <option value="fiscal">Fiscal</option>
                             <option value="trabalhista">Trabalhista</option>
-                            <option value="outros">Nota Carioca</option>
+                            <option value="outros">NFS-e Nacional</option>
                             <option value="pcmso">PCMSO</option>
                             <option value="dec">Domicílio Fiscal Estadual - DEC</option>
                         </select>
@@ -446,9 +446,9 @@ const envs = {
         color: "#006b3f"
     },
     nota: {
-        title: "Nota Carioca - Prefeitura do Rio",
-        url: "https://notacarioca.rio.gov.br/senhaweb/login.aspx",
-        color: "#e67e22"
+        title: "Emissor Nacional NFS-e",
+        url: "https://www.nfse.gov.br/EmissorNacional/Login?ReturnUrl=%2femissornacional",
+        color: "#0b4f6c"
     },
     dec: {
         title: "Domicílio Fiscal Estadual - DEC",
@@ -522,14 +522,14 @@ let currentEvidenceImage = null; // dataURL da imagem selecionada
 let lastPdfBlobUrl = null;
 let lastPdfBlob = null;
 
-const categoryLabels = { fiscal: 'Fiscal', trabalhista: 'Trabalhista', outros: 'Nota Carioca', pcmso: 'PCMSO', dec: 'Domicílio Fiscal Estadual - DEC' };
+const categoryLabels = { fiscal: 'Fiscal', trabalhista: 'Trabalhista', outros: 'NFS-e Nacional', pcmso: 'PCMSO', dec: 'Domicílio Fiscal Estadual - DEC' };
 
 // Textos padrão que semipreenchem o formulário de nova evidência de acordo
 // com o tema selecionado (o usuário ainda pode editá-los livremente)
 const categoryTitleDefaults = {
     fiscal: 'Consulta ao ambiente fiscal',
     trabalhista: 'Consulta ao ambiente Trabalhista',
-    outros: 'Consulta ao emissor de notas fiscais municipal',
+    outros: 'Consulta ao Emissor Nacional de NFS-e',
     pcmso: 'Consulta ao Portal Ocupacional MED (PCMSO)',
     dec: 'Consulta ao Domicílio Fiscal Estadual (DEC)'
 };
