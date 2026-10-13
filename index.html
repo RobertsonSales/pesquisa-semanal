@@ -77,6 +77,8 @@ html, body { margin: 0; padding: 0; background: var(--color-bg-page); color: var
 label { font-size: var(--text-small); font-weight: 600; color: var(--color-text-secondary); }
 input, select { padding: var(--space-12); border-radius: var(--radius-8); border: var(--border-width-1) solid var(--color-border-strong); background: var(--color-bg-subtle); color: var(--color-text-primary); font-size: var(--text-body); transition: border-color 0.2s, box-shadow 0.2s; }
 input:focus, select:focus { outline: none; border-color: var(--color-brand-secondary); box-shadow: 0 0 0 3px rgba(15,127,255,0.15); }
+.company-note { grid-column: 1 / -1; margin: -8px 0 0; color: var(--color-text-tertiary); font-size: var(--text-caption); }
+.company-note strong { color: var(--color-warning); }
 .actions { display: flex; gap: var(--space-12); flex-wrap: wrap; }
 button { padding: var(--space-12) var(--space-24); border-radius: var(--radius-8); border: none; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s; display: flex; align-items: center; gap: var(--space-8); }
 button.primary { background: var(--color-brand-secondary); color: var(--color-text-on-brand); }
@@ -287,16 +289,23 @@ button.future { background: var(--color-bg-subtle); color: var(--color-text-tert
   <div class="card">
     <div class="form-grid">
       <div class="form-row">
-        <label for="cnpj">CNPJ do Alvo *</label>
-        <input id="cnpj" type="text" placeholder="00.000.000/0000-00" maxlength="18" />
+        <label for="companySelect">Empresa titular *</label>
+        <select id="companySelect" aria-describedby="companyNote">
+          <option value="">Selecione uma empresa cadastrada</option>
+        </select>
       </div>
       <div class="form-row">
-        <label for="razao">Razão Social (Referência)</label>
-        <input id="razao" type="text" placeholder="Nome da empresa" />
+        <label for="cnpj">CNPJ selecionado</label>
+        <input id="cnpj" type="text" placeholder="Selecione uma empresa" readonly />
       </div>
+      <p class="company-note" id="companyNote">Os dados cadastrais são mantidos localmente nesta aplicação e não são consultados novamente a cada execução.</p>
+    </div>
+    <div class="form-row" style="margin-bottom: var(--space-16);">
+      <label for="razao">Razão Social (Referência)</label>
+      <input id="razao" type="text" placeholder="Preenchida automaticamente" readonly />
     </div>
     <div class="actions">
-      <button class="primary" id="btnSearch">🔍 Iniciar Análise Consolidada</button>
+      <button class="primary" id="btnSearch" disabled>🔍 Iniciar Análise Consolidada</button>
       <button class="secondary" id="btnClear">Limpar Campos</button>
     </div>
   </div>
@@ -309,7 +318,7 @@ button.future { background: var(--color-bg-subtle); color: var(--color-text-tert
   <!-- O quadro de Identificação Cadastral fica logo abaixo do botão de análise -->
   <div class="results" id="identResults">
     <div class="card">
-      <h3 class="section-title">📇 Identificação Cadastral <span class="badge ok" id="sourceBadge">BrasilAPI</span></h3>
+      <h3 class="section-title">📇 Identificação Cadastral <span class="badge ok" id="sourceBadge">Cadastro local revisado</span></h3>
       <dl class="kv" id="identKv"></dl>
     </div>
   </div>
@@ -434,6 +443,101 @@ button.future { background: var(--color-bg-subtle); color: var(--color-text-tert
 </div>
 
 <script>
+/* =========================================================
+   CADASTRO LOCAL DE EMPRESAS
+   Os dados foram pesquisados na etapa de revisão e ficam embutidos
+   na aplicação para evitar uma nova consulta externa a cada execução.
+   Observação: o primeiro CNPJ informado (31.947.632/0001-37) não
+   possui dígito verificador válido. A pesquisa encontrou a empresa
+   Labmedic no CNPJ 21.947.632/0001-37, provável erro de transcrição.
+   ========================================================= */
+const companies = [
+    {
+        id: 'labmedic',
+        cnpj: '21.947.632/0001-37',
+        cnpjInformado: '31.947.632/0001-37',
+        razao_social: 'Labmedic Comercio e Manutencao de Equipamentos Medicos LTDA',
+        nome_fantasia: 'Labmedic',
+        descricao_situacao_cadastral: 'ATIVA',
+        data_inicio_atividade: '25/02/2015',
+        logradouro: 'Avenida Alberico Diniz',
+        numero: '00351',
+        complemento: 'Lot 10 Pal 21660 Qdr 26',
+        bairro: 'Jardim Sulacap',
+        municipio: 'Rio de Janeiro',
+        uf: 'RJ',
+        cep: '21741-110',
+        natureza_juridica: 'Sociedade Empresária Limitada',
+        cnae_fiscal_descricao: 'Comércio atacadista de instrumentos e materiais para uso médico, cirúrgico, hospitalar e de laboratórios',
+        fonte: 'CNPJ.BIZ; número original informado inválido'
+    },
+    {
+        id: 'diag-rio',
+        cnpj: '14.878.232/0001-51',
+        razao_social: 'Diag Rio Produtos para Laboratorio LTDA',
+        nome_fantasia: '—',
+        descricao_situacao_cadastral: 'ATIVA',
+        data_inicio_atividade: '13/01/2012',
+        logradouro: 'Avenida Alberico Diniz',
+        numero: '00351',
+        complemento: 'Lot 10 Pal 21660 Qdr 26 Parte',
+        bairro: 'Jardim Sulacap',
+        municipio: 'Rio de Janeiro',
+        uf: 'RJ',
+        cep: '21741-110',
+        natureza_juridica: 'Sociedade Empresária Limitada',
+        cnae_fiscal_descricao: 'Comércio atacadista de instrumentos e materiais para uso médico, cirúrgico, hospitalar e de laboratórios',
+        fonte: 'Econodata; dados públicos da Receita Federal'
+    },
+    {
+        id: 'qst-holding',
+        cnpj: '36.378.905/0001-47',
+        razao_social: 'QST HOLDING E PARTICIPACOES LTDA',
+        nome_fantasia: 'GRUPO LABMEDIC',
+        descricao_situacao_cadastral: 'ATIVA',
+        data_inicio_atividade: '14/02/2020',
+        logradouro: 'Avenida das Américas',
+        numero: '12900',
+        complemento: 'Bloco 1, sala 415D',
+        bairro: 'Barra da Tijuca',
+        municipio: 'Rio de Janeiro',
+        uf: 'RJ',
+        cep: '22790-702',
+        natureza_juridica: 'Sociedade Empresária Limitada',
+        cnae_fiscal_descricao: 'Holdings de instituições não-financeiras',
+        fonte: 'BrasilAPI; dados públicos da Receita Federal'
+    }
+];
+
+function populateCompanySelector() {
+    const select = document.getElementById('companySelect');
+    companies.forEach(company => {
+        const option = document.createElement('option');
+        option.value = company.id;
+        option.textContent = `${company.nome_fantasia !== '—' ? company.nome_fantasia + ' — ' : ''}${company.razao_social} (${company.cnpj})`;
+        select.appendChild(option);
+    });
+}
+
+function selectCompany(companyId) {
+    const company = companies.find(item => item.id === companyId);
+    const cnpjField = document.getElementById('cnpj');
+    const razaoField = document.getElementById('razao');
+    const btnSearch = document.getElementById('btnSearch');
+    if (!company) {
+        cnpjField.value = '';
+        razaoField.value = '';
+        btnSearch.disabled = true;
+        return;
+    }
+    cnpjField.value = company.cnpj;
+    razaoField.value = company.razao_social;
+    btnSearch.disabled = false;
+}
+
+populateCompanySelector();
+document.getElementById('companySelect').addEventListener('change', event => selectCompany(event.target.value));
+
 const envs = {
     ecac: {
         title: "Receita Federal - e-CAC",
@@ -974,11 +1078,14 @@ async function generatePdfPreview(notify = true) {
     }
 }
 
-/* LOGICA DE BUSCA SIMULADA (Preservando a funcionalidade original de análise cadastral) */
+/* =========================================================
+   ANÁLISE CADASTRAL A PARTIR DO CADASTRO LOCAL
+   ========================================================= */
 document.getElementById('btnSearch').onclick = async () => {
-    const cnpj = document.getElementById('cnpj').value.replace(/\D/g, '');
-    if (cnpj.length !== 14) {
-        alert("Por favor, insira um CNPJ válido.");
+    const companyId = document.getElementById('companySelect').value;
+    const company = companies.find(item => item.id === companyId);
+    if (!company) {
+        alert("Selecione uma empresa cadastrada.");
         return;
     }
 
@@ -989,24 +1096,13 @@ document.getElementById('btnSearch').onclick = async () => {
     identResults.classList.remove('show');
     results.classList.remove('show');
 
-    try {
-        // Chamada real à BrasilAPI para dados cadastrais
-        const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`);
-        const data = await response.json();
-
-        if (response.ok) {
-            renderIdent(data);
-            identResults.classList.add('show');
-            results.classList.add('show');
-            enableEnvironments();
-        } else {
-            alert("Erro ao buscar dados do CNPJ.");
-        }
-    } catch (e) {
-        alert("Erro na conexão.");
-    } finally {
-        status.classList.remove('show');
-    }
+    // Mantém a mesma experiência visual, sem rede: os dados já estão no cadastro local.
+    await new Promise(resolve => setTimeout(resolve, 180));
+    renderIdent(company);
+    identResults.classList.add('show');
+    results.classList.add('show');
+    enableEnvironments();
+    status.classList.remove('show');
 };
 
 function enableEnvironments() {
@@ -1030,13 +1126,19 @@ function renderIdent(data) {
     if (razaoField) razaoField.value = data.razao_social || '';
 
     const kv = document.getElementById('identKv');
+    const notice = data.cnpjInformado
+        ? `<dt>Observação</dt><dd><span class="badge warn">CNPJ informado ${data.cnpjInformado} inválido; cadastro carregado com ${data.cnpj}</span></dd>`
+        : '';
     kv.innerHTML = `
         <dt>CNPJ</dt><dd>${data.cnpj}</dd>
         <dt>Razão Social</dt><dd>${data.razao_social}</dd>
         <dt>Nome Fantasia</dt><dd>${data.nome_fantasia || '—'}</dd>
         <dt>Situação</dt><dd><span class="badge ok">${data.descricao_situacao_cadastral}</span></dd>
         <dt>Abertura</dt><dd>${data.data_inicio_atividade}</dd>
-        <dt>Endereço</dt><dd>${data.logradouro}, ${data.numero} - ${data.municipio}/${data.uf}</dd>
+        <dt>Endereço</dt><dd>${data.logradouro}, ${data.numero}${data.complemento ? ' — ' + data.complemento : ''} - ${data.bairro}, ${data.municipio}/${data.uf} — CEP ${data.cep}</dd>
+        <dt>Natureza Jurídica</dt><dd>${data.natureza_juridica || '—'}</dd>
+        <dt>Atividade Principal</dt><dd>${data.cnae_fiscal_descricao || '—'}</dd>
+        ${notice}
     `;
 }
 
@@ -1054,8 +1156,10 @@ document.getElementById('btnClear').onclick = () => {
     }
 
     // Limpa os campos do formulário
+    document.getElementById('companySelect').value = '';
     document.getElementById('cnpj').value = '';
     document.getElementById('razao').value = '';
+    document.getElementById('btnSearch').disabled = true;
 
     // Reseta a Identificação Cadastral e os resultados exibidos
     lastIdentData = null;
