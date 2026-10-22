@@ -888,20 +888,25 @@ function escapeHtml(str) {
 }
 
 function fitImageToBox(dataUrl, boxW, boxH) {
+    // Retorna { data, fmt }. Mantém a resolução NATIVA da captura (até ~300 dpi)
+    // e usa PNG (sem perdas) para que textos de telas de portais fiquem nítidos.
     return new Promise((resolve) => {
         const img = new Image();
         img.onload = () => {
             try {
-                const canvas = document.createElement('canvas');
-                // Usa um fator de escala para manter boa resolução no PDF
-                const scaleFactor = 2;
-                canvas.width = Math.round(boxW * scaleFactor);
-                canvas.height = Math.round(boxH * scaleFactor);
-                const ctx = canvas.getContext('2d');
+                // Fator "contain": quanto a imagem precisa ser reduzida para caber na moldura (em pt)
+                const fit = Math.min(boxW / img.width, boxH / img.height);
+                // Pixels por ponto necessários para NÃO perder resolução da imagem original.
+                // Mínimo 2 (~144 dpi) e máximo 4.2 (~300 dpi) para limitar o tamanho do PDF.
+                const pxPerPt = Math.min(Math.max(1 / fit, 2), 4.2);
 
-                // Ajuste "contain": a imagem inteira é exibida dentro da
-                // moldura, redimensionada proporcionalmente e sem cortes;
-                // o espaço remanescente (se houver) é preenchido em branco
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.round(boxW * pxPerPt);
+                canvas.height = Math.round(boxH * pxPerPt);
+                const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+
                 const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
                 const dw = img.width * scale;
                 const dh = img.height * scale;
@@ -911,12 +916,12 @@ function fitImageToBox(dataUrl, boxW, boxH) {
                 ctx.fillStyle = '#ffffff';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(img, 0, 0, img.width, img.height, dx, dy, dw, dh);
-                resolve(canvas.toDataURL('image/jpeg', 0.92));
+                resolve({ data: canvas.toDataURL('image/png'), fmt: 'PNG' });
             } catch (e) {
-                resolve(dataUrl);
+                resolve({ data: dataUrl, fmt: /^data:image\/jpe?g/i.test(dataUrl) ? 'JPEG' : 'PNG' });
             }
         };
-        img.onerror = () => resolve(dataUrl);
+        img.onerror = () => resolve({ data: dataUrl, fmt: /^data:image\/jpe?g/i.test(dataUrl) ? 'JPEG' : 'PNG' });
         img.src = dataUrl;
     });
 }
@@ -1033,7 +1038,7 @@ async function generatePdfPreview(notify = true) {
             const imgX = cellX + (cellWidth - imgBoxW) / 2;
             const imgY = cellY + cardPadding / 2;
             try {
-                doc.addImage(framedImages[i], 'JPEG', imgX, imgY, imgBoxW, imgBoxH, undefined, 'FAST');
+                doc.addImage(framedImages[i].data, framedImages[i].fmt, imgX, imgY, imgBoxW, imgBoxH, undefined, 'FAST');
             } catch (e) { /* ignora falha pontual de renderização da imagem */ }
             doc.setDrawColor(225);
             doc.roundedRect(imgX, imgY, imgBoxW, imgBoxH, 4, 4, 'S');
